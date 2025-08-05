@@ -9,5 +9,4 @@ public class ItkAcademyApplication {
     public static void main(String[] args) {
         SpringApplication.run(ItkAcademyApplication.class, args);
     }
-
 }
