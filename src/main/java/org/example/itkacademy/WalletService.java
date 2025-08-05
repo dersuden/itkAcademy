@@ -15,12 +15,13 @@ public class WalletService {
 
     @Transactional
     public void processOperation(UUID walletId, OperationType operationType, Long amount) {
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Amount must be positive");
-        }
+        Wallets wallet = walletRepository.findById(walletId)
+                .orElseGet(() -> {
+                    Wallets newWallet = new Wallets(walletId);
+                    newWallet.setBalance(0L);
+                    return walletRepository.saveAndFlush(newWallet);
+                });
 
-        Wallet wallet = walletRepository.findById(walletId)
-                .orElseGet(() -> createNewWallet(walletId));
 
         if (operationType == OperationType.WITHDRAW && wallet.getBalance() < amount) {
             throw new IllegalStateException("Insufficient funds");
@@ -36,14 +37,7 @@ public class WalletService {
 
     public Long getBalance(UUID walletId) {
         return walletRepository.findById(walletId)
-                .map(Wallet::getBalance)
+                .map(Wallets::getBalance)
                 .orElse(0L);
-    }
-
-    private Wallet createNewWallet(UUID walletId) {
-        Wallet wallet = new Wallet();
-        wallet.setId(walletId);
-        wallet.setBalance(0L);
-        return wallet;
     }
 }
